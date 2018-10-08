@@ -88,3 +88,33 @@ ROBOTSTXT_OBEY = True
 #HTTPCACHE_DIR = 'httpcache'
 #HTTPCACHE_IGNORE_HTTP_CODES = []
 #HTTPCACHE_STORAGE = 'scrapy.extensions.httpcache.FilesystemCacheStorage'
+
+
+# Added custom code to handle local config files
+#
+# NB: Any custom params must start with an uppercase character
+#
+
+from importlib import import_module
+import logging
+import os
+
+SCRAPY_ENV=os.environ.get('SCRAPY_ENV',None)
+if SCRAPY_ENV == None:
+    raise ValueError("Must set SCRAPY_ENV environment var")
+
+# Load if file exists; incorporate any names started with an
+# uppercase letter into globals()
+def load_extra_settings(fname):
+    if not os.path.isfile("config/%s.py" % fname):
+        logger = logging.getLogger(__name__) 
+        logger.warning("Couldn't find %s, skipping" % fname)
+        return
+    mdl=import_module("config.%s" % fname)
+    names = [x for x in mdl.__dict__ if x[0].isupper()]
+    globals().update({k: getattr(mdl,k) for k in names})
+
+load_extra_settings("secrets")
+load_extra_settings("secrets_%s" % SCRAPY_ENV)
+load_extra_settings("settings_%s" % SCRAPY_ENV)
+

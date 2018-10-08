@@ -1,2 +1,4 @@
 **/*.pyc
+config/secrets*.py
+config/settings_*.py
 
