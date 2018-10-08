@@ -96,18 +96,20 @@ ROBOTSTXT_OBEY = True
 #
 
 from importlib import import_module
+from scrapy.utils.log import configure_logging
 import logging
 import os
 
 SCRAPY_ENV=os.environ.get('SCRAPY_ENV',None)
 if SCRAPY_ENV == None:
     raise ValueError("Must set SCRAPY_ENV environment var")
+logger = logging.getLogger(__name__) 
+configure_logging({'LOG_FORMAT': '%(levelname)s: %(message)s'})
 
 # Load if file exists; incorporate any names started with an
 # uppercase letter into globals()
 def load_extra_settings(fname):
     if not os.path.isfile("config/%s.py" % fname):
-        logger = logging.getLogger(__name__) 
         logger.warning("Couldn't find %s, skipping" % fname)
         return
     mdl=import_module("config.%s" % fname)
